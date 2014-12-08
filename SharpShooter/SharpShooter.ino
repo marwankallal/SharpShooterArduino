@@ -1,8 +1,8 @@
 #include <Servo.h> 
 
-int MOTORPIN = 9;
+int MOTORPIN = 6; //DONT USE 9 OR 10, SERVO DISABLES THEM
 int SONARPIN = 1;
-int SERVOPIN = 11;
+int SERVOPIN = 9;
 
 //servo positions (0, 1, 2, ||3||, 4, 5, 6)
 
@@ -23,9 +23,9 @@ void setup(){
   pinMode(MOTORPIN, OUTPUT);
   
   //start user prompt and play flow
-  Serial.println("Welcome to SharpShooter!\nPlease (s)tart to begin or (c)alibrate");
+  Serial.println("Welcome to SharpShooter!\nPlease 0 to (s)tart or 1 to (c)alibrate");
   
-  if(waitAndGetLetter() == 'c'){
+  if(waitAndGetInt() == 1){
     calibrate();
   }
 }
@@ -34,12 +34,12 @@ void loop(){
   //TODO READ SONAR TO GET DISTANCE
   
   setMotorVoltageSteps(baseVoltageSteps);
-  delay(10000);
+  delay(3000);
   setMotorVoltageSteps(0);
   
-  Serial.println("(n)ext?");
+  Serial.println("(n)ext? PRESS 0");
   
-  while(waitAndGetLetter() != 'n'){}
+  while(waitAndGetInt() != 0){}
   currentCup++;
   
   moveServoToPosition(getCupPosition(currentCup));
@@ -77,14 +77,6 @@ void calibrate(){
   baseVoltageSteps = waitAndGetInt();
 }
 
-char waitAndGetLetter(){
-  //wait for user
-  while (Serial.available()==0){ }
-  Serial.readBytes(userIn, 1);
-  Serial.println("INPUT" + userIn[0]);
-  return userIn[0];
-}
-
 int waitAndGetInt(){
   //wait for user
   while (Serial.available()==0){ } 
@@ -92,11 +84,11 @@ int waitAndGetInt(){
 }
 
 void setMotorVoltage(float volts){
-  analogWrite(9, volts * 255.0 / 5.0 );
+  analogWrite(MOTORPIN, volts * 255.0 / 5.0 );
 }
 
 void setMotorVoltageSteps(int voltSteps){
-  analogWrite(9, voltSteps);
+  analogWrite(MOTORPIN, voltSteps);
 }
 
 int getCupPosition(int cupNum){
