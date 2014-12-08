@@ -26,6 +26,7 @@ void loop() {
     //Scale factor is (Vcc/512) per inch. A 5V supply yields ~9.8mV/in
     //Arduino analog pin goes from 0 to 1024, so the value has to be divided by 2 to get the actual inches
     anVolt = (float)analogRead(anPin) / 2;
+    Serial.println(anVolt);
     sum += anVolt;
     delay(10);
   }  

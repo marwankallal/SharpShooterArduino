@@ -1,13 +1,13 @@
 #include <Servo.h> 
 
-#define MOTORPIN 9
-#define SONARPIN 1
-#define SERVOPIN 11
+int MOTORPIN = 9;
+int SONARPIN = 1;
+int SERVOPIN = 11;
 
 //servo positions (0, 1, 2, ||3||, 4, 5, 6)
 
-//Base voltage for voltage equation (0 point)
-int baseVoltage = 0; //FIXME: FIND THE RIGHT STARTING VOLTAGE
+//Base voltage for voltage equation (FRONT CUP)
+int baseVoltageSteps = 43; //v = b + .5v/3.3in * inchesFromFront
 
 int currentCup = 0;
 
@@ -28,23 +28,25 @@ void setup(){
   if(waitAndGetLetter() == 'c'){
     calibrate();
   }
-  else{
-    setMotorVoltage(1.0);
-  }
-  
-  if(waitAndGetLetter() == 't'){
-    setMotorVoltage(0);
-  }
 }
 
 void loop(){
+  //TODO READ SONAR TO GET DISTANCE
   
+  setMotorVoltageSteps(baseVoltageSteps);
+  delay(10000);
+  setMotorVoltageSteps(0);
   
+  Serial.println("(n)ext?");
   
+  while(waitAndGetLetter() != 'n'){}
+  currentCup++;
+  
+  moveServoToPosition(getCupPosition(currentCup));
 }
 
 //returns distance in inches
-int ReadSonar(){
+int readSonar(){
   long anVolt, inches, cm;
   int sum=0;//Create sum variable so it can be averaged
   int avgrange=60;//Quantity of values to average (sample size)
@@ -72,13 +74,14 @@ int ReadSonar(){
 
 void calibrate(){
   Serial.println("Please enter a new base voltage (IN ARDUINO STEPS):");
-  baseVoltage = waitAndGetInt();
+  baseVoltageSteps = waitAndGetInt();
 }
 
 char waitAndGetLetter(){
   //wait for user
   while (Serial.available()==0){ }
   Serial.readBytes(userIn, 1);
+  Serial.println("INPUT" + userIn[0]);
   return userIn[0];
 }
 
@@ -89,8 +92,11 @@ int waitAndGetInt(){
 }
 
 void setMotorVoltage(float volts){
-  analogWrite(MOTORPIN, volts * 255.0 / 5.0 );
-  Serial.println(volts * 255.0 / 5.0);
+  analogWrite(9, volts * 255.0 / 5.0 );
+}
+
+void setMotorVoltageSteps(int voltSteps){
+  analogWrite(9, voltSteps);
 }
 
 int getCupPosition(int cupNum){
