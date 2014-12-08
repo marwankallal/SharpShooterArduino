@@ -20,15 +20,20 @@ void setup(){
   //basic setup
   Serial.begin(9600);
   trackServo.attach(SERVOPIN);
+  pinMode(MOTORPIN, OUTPUT);
   
-  //start user promtp and play flow
+  //start user prompt and play flow
   Serial.println("Welcome to SharpShooter!\nPlease (s)tart to begin or (c)alibrate");
   
   if(waitAndGetLetter() == 'c'){
     calibrate();
   }
   else{
-    moveServoToPosition(4);
+    setMotorVoltage(1.0);
+  }
+  
+  if(waitAndGetLetter() == 't'){
+    setMotorVoltage(0);
   }
 }
 
@@ -36,6 +41,33 @@ void loop(){
   
   
   
+}
+
+//returns distance in inches
+int ReadSonar(){
+  long anVolt, inches, cm;
+  int sum=0;//Create sum variable so it can be averaged
+  int avgrange=60;//Quantity of values to average (sample size)
+  
+  for(int i = 0; i < avgrange ; i++)
+  {
+    //Used to read in the analog voltage output that is being sent by the MaxSonar device.
+    //Scale factor is (Vcc/512) per inch. A 5V supply yields ~9.8mV/in
+    //Arduino analog pin goes from 0 to 1024, so the value has to be divided by 2 to get the actual inches
+    anVolt = (float)analogRead(SONARPIN) / 2;
+    sum += anVolt;
+    delay(10);
+  }  
+  cm = sum/avgrange;
+  inches = cm / 2.54;
+
+  Serial.print(inches);
+  Serial.print("in, ");
+  Serial.print(cm);
+  Serial.print("cm");
+  Serial.println();
+  
+  return inches;
 }
 
 void calibrate(){
@@ -54,6 +86,11 @@ int waitAndGetInt(){
   //wait for user
   while (Serial.available()==0){ } 
   return Serial.parseInt();
+}
+
+void setMotorVoltage(float volts){
+  analogWrite(MOTORPIN, volts * 255.0 / 5.0 );
+  Serial.println(volts * 255.0 / 5.0);
 }
 
 int getCupPosition(int cupNum){
@@ -88,7 +125,7 @@ void moveServoToPosition(int pos){
   int mov = pos - getCupPosition(currentCup);
   
   mov > 0 ? trackServo.write(180) : trackServo.write(0); //check which way to move and move there
-  delay(200 * mov); //TODO: FIND PROPER DELAY FOR ONE POSITION
+  delay(700 * mov); //TODO: FIND PROPER DELAY FOR ONE POSITION
   trackServo.write(90);
   
 }
