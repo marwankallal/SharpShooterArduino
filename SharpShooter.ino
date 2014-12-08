@@ -5,23 +5,48 @@
 
 //servo positions (0, .5, 1, ||1.5||, 2, 2.5, 3)
 
+//Base voltage for voltage equation (0 point)
+int baseVoltage = 0; //FIXME: FIND THE RIGHT VOLTAGE
+
 int currentCup = 0;
 
-char userIn[1];
+//user input buffer
+char userIn[1]; 
 
 void setup(){
   
   Serial.begin(9600);
   
-  Serial.println("Welcome to SharpShooter!\nPlease (s)tart to begin");
-  while (Serial.available()==0){ } //wait for user
-  Serial.readBytes(userIn, 1);
+  Serial.println("Welcome to SharpShooter!\nPlease (s)tart to begin or (c)alibrate");
+  
+  if(waitAndGetLetter() == 'c'){
+    calibrate();
+  }
 }
 
 void loop(){
   
   
   
+}
+
+void calibrate(){
+  //TODO: BUILD ME!
+  Serial.println("Please enter a new base voltage:");
+  baseVoltage = waitAndGetNumber();
+}
+
+char waitAndGetLetter(){
+  //wait for user
+  while (Serial.available()==0){ }
+  Serial.readBytes(userIn, 1);
+  return userIn[0];
+}
+
+int waitAndGetNumber(){
+  //wait for user
+  while (Serial.available()==0){ } 
+  return Serial.parseInt();
 }
 
 int getCupPosition(int cupNum){
