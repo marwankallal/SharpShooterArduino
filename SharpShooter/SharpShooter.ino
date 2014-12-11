@@ -7,9 +7,9 @@ int SERVOPIN = 9;
 //servo positions (0, 1, 2, ||3||, 4, 5, 6)
 
 //Base voltage for voltage equation (FRONT CUP)
-int baseVoltageSteps = 43; //v = b + .5v/3.3in * inchesFromFront
+int baseVoltageSteps = 41; //v = b + .5v/3.3in * inchesFromFront
 
-int currentCup = 0;
+int currentCup = 3;
 
 //user input buffer
 char userIn[1]; 
@@ -33,16 +33,19 @@ void setup(){
 void loop(){
   //TODO READ SONAR TO GET DISTANCE
   
-  setMotorVoltageSteps(baseVoltageSteps);
-  delay(3000);
+  setMotorVoltageSteps(baseVoltageSteps + ((float)getCupRow(currentCup) * 0.5));
+  
+  Serial.println("enter anything to kill");
+  waitAndGetInt();
+  
   setMotorVoltageSteps(0);
   
-  Serial.println("(n)ext? PRESS 0");
+  Serial.println("HIT (0) or MISS (1)");
   
-  while(waitAndGetInt() != 0){}
-  currentCup++;
-  
-  moveServoToPosition(getCupPosition(currentCup));
+  if(waitAndGetInt() == 0){
+    moveServoToPosition(getCupPosition(currentCup + 1));
+    currentCup++;
+  }
 }
 
 //returns distance in inches
@@ -122,8 +125,8 @@ void moveServoToPosition(int pos){
   //NOTE: CONTINUOUS ROTATION SERVOS HAVE NO ANGLE MODIFIERS. THEY TAKE SPEEDS (180 FULL SPEED, -180 FULL REVERSE)
   int mov = pos - getCupPosition(currentCup);
   
-  mov > 0 ? trackServo.write(180) : trackServo.write(0); //check which way to move and move there
-  delay(700 * mov); //TODO: FIND PROPER DELAY FOR ONE POSITION
+  mov < 0 ? trackServo.write(180) : trackServo.write(0); //check which way to move and move there
+  delay(400 * mov); //TODO: FIND PROPER DELAY FOR ONE POSITION
   trackServo.write(90);
   
 }
